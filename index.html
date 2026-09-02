@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Weight Price Calculator</title>
+<style>
+  :root{
+    --bg:#0f1720;
+    --card:#182635;
+    --card2:#1e3046;
+    --accent:#22c55e;
+    --accent2:#16a34a;
+    --text:#f1f5f9;
+    --muted:#94a3b8;
+    --danger:#ef4444;
+    --radius:16px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    background:linear-gradient(180deg,#0f1720 0%,#111c27 100%);
+    color:var(--text);
+    min-height:100vh;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{
+    max-width:800px;
+    margin:0 auto;
+    padding:16px;
+    padding-bottom:60px;
+  }
+  header{
+    text-align:center;
+    padding:20px 10px 12px;
+    animation:fadeDown .4s ease;
+  }
+  header h1{
+    margin:0;
+    font-size:1.5rem;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    letter-spacing:.2px;
+  }
+  header p{
+    margin:6px 0 0;
+    color:var(--muted);
+    font-size:.9rem;
+  }
+  .status{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    margin-top:10px;
+    font-size:.75rem;
+    color:var(--accent);
+    background:rgba(34,197,94,.12);
+    padding:4px 10px;
+    border-radius:999px;
+  }
+  .status .dot{
+    width:8px;height:8px;border-radius:50%;
+    background:var(--accent);
+    animation:pulse 2s infinite;
+  }
+  .card{
+    background:var(--card);
+    border-radius:var(--radius);
+    padding:18px;
+    margin-bottom:16px;
+    box-shadow:0 4px 14px rgba(0,0,0,.25);
+    animation:fadeUp .35s ease;
+  }
+  .card h2{
+    margin:0 0 12px;
+    font-size:1rem;
+    color:var(--text);
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .input-wrap{
+    display:flex;
+    align-items:center;
+    background:var(--card2);
+    border-radius:12px;
+    padding:4px 14px;
+    border:2px solid transparent;
+    transition:border-color .2s;
+  }
+  .input-wrap:focus-within{
+    border-color:var(--accent);
+  }
+  .input-wrap span.prefix{
+    color:var(--muted);
+    font-weight:600;
+    margin-right:6px;
+    font-size:1.1rem;
+  }
+  .input-wrap input{
+    flex:1;
+    background:transparent;
+    border:none;
+    outline:none;
+    color:var(--text);
+    font-size:1.4rem;
+    font-weight:700;
+    padding:12px 0;
+    min-width:0;
+    -moz-appearance:textfield;
+  }
+  .input-wrap input::-webkit-outer-spin-button,
+  .input-wrap input::-webkit-inner-spin-button{
+    -webkit-appearance:none;margin:0;
+  }
+  .error-msg{
+    color:var(--danger);
+    font-size:.8rem;
+    margin-top:8px;
+    min-height:1em;
+  }
+  .quick-buttons{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:12px;
+  }
+  .quick-buttons button{
+    flex:1 1 auto;
+    min-width:70px;
+    background:var(--card2);
+    color:var(--text);
+    border:none;
+    border-radius:10px;
+    padding:10px 8px;
+    font-size:.9rem;
+    font-weight:600;
+    cursor:pointer;
+    transition:transform .1s, background .2s;
+  }
+  .quick-buttons button:active{
+    transform:scale(.95);
+    background:var(--accent2);
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+  }
+  @media(min-width:480px){
+    .grid{grid-template-columns:repeat(3,1fr);}
+  }
+  @media(min-width:700px){
+    .grid{grid-template-columns:repeat(4,1fr);}
+  }
+  .weight-card{
+    background:var(--card2);
+    border-radius:12px;
+    padding:12px 10px;
+    text-align:center;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+    transition:transform .15s;
+  }
+  .weight-card:active{transform:scale(.97);}
+  .weight-card .wt{
+    font-size:.8rem;
+    color:var(--muted);
+    font-weight:600;
+  }
+  .weight-card .price{
+    font-size:1.15rem;
+    font-weight:800;
+    color:var(--accent);
+    word-break:break-word;
+  }
+  .weight-card .copy-btn{
+    border:none;
+    background:rgba(148,163,184,.15);
+    color:var(--text);
+    font-size:.72rem;
+    padding:6px 10px;
+    border-radius:8px;
+    cursor:pointer;
+    width:100%;
+  }
+  .weight-card .copy-btn.copied{
+    background:var(--accent);
+    color:#06210f;
+  }
+  .custom-result{
+    margin-top:14px;
+    background:var(--card2);
+    border-radius:12px;
+    padding:16px;
+    text-align:center;
+  }
+  .custom-result .label{
+    color:var(--muted);
+    font-size:.85rem;
+  }
+  .custom-result .value{
+    font-size:1.6rem;
+    font-weight:800;
+    color:var(--accent);
+    margin-top:4px;
+    word-break:break-word;
+  }
+  .btn-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:16px;
+  }
+  .btn{
+    flex:1 1 auto;
+    min-width:100px;
+    padding:14px 10px;
+    border-radius:12px;
+    border:none;
+    font-size:.95rem;
+    font-weight:700;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    transition:transform .1s, opacity .2s;
+  }
+  .btn:active{transform:scale(.96);}
+  .btn-primary{background:var(--accent);color:#06210f;}
+  .btn-secondary{background:var(--card2);color:var(--text);}
+  .btn-danger{background:rgba(239,68,68,.15);color:var(--danger);}
+  .toast{
+    position:fixed;
+    left:50%;
+    bottom:30px;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--accent);
+    color:#06210f;
+    padding:10px 20px;
+    border-radius:999px;
+    font-weight:700;
+    font-size:.9rem;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .25s, transform .25s;
+    z-index:1000;
+    box-shadow:0 6px 20px rgba(0,0,0,.3);
+  }
+  .toast.show{
+    opacity:1;
+    transform:translateX(-50%) translateY(0);
+  }
+  .storage-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-top:10px;
+    font-size:.8rem;
+    color:var(--muted);
+  }
+  .storage-row button{
+    background:none;
+    border:none;
+    color:var(--danger);
+    font-size:.8rem;
+    cursor:pointer;
+    text-decoration:underline;
+  }
+  footer{
+    text-align:center;
+    color:var(--muted);
+    font-size:.75rem;
+    margin-top:20px;
+  }
+  @keyframes fadeUp{
+    from{opacity:0;transform:translateY(10px);}
+    to{opacity:1;transform:translateY(0);}
+  }
+  @keyframes fadeDown{
+    from{opacity:0;transform:translateY(-10px);}
+    to{opacity:1;transform:translateY(0);}
+  }
+  @keyframes pulse{
+    0%,100%{opacity:1;}
+    50%{opacity:.4;}
+  }
+
+  /* Modal for confirm */
+  .modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.55);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:2000;
+    padding:20px;
+  }
+  .modal-overlay.show{display:flex;}
+  .modal{
+    background:var(--card);
+    border-radius:16px;
+    padding:20px;
+    max-width:340px;
+    width:100%;
+    text-align:center;
+    animation:fadeUp .2s ease;
+  }
+  .modal p{margin:0 0 16px;font-size:.95rem;}
+  .modal .modal-btns{display:flex;gap:10px;}
+  .modal .modal-btns button{flex:1;padding:12px;border-radius:10px;border:none;font-weight:700;cursor:pointer;}
+  .modal .cancel{background:var(--card2);color:var(--text);}
+  .modal .confirm{background:var(--danger);color:#fff;}
+
+  /* Print styles */
+  @media print{
+    body{background:#fff;color:#000;}
+    .status,.quick-buttons,.input-wrap input,.btn-row,.storage-row,.custom-input,.error-msg,.copy-btn,footer,.modal-overlay,.custom-card-inputs{
+      display:none !important;
+    }
+    .card{box-shadow:none;background:#fff;border:1px solid #ccc;}
+    .weight-card{background:#fff;border:1px solid #ddd;}
+    .weight-card .price{color:#000;}
+    #weightGrid{display:grid !important;}
+    .print-header{display:block !important;}
+  }
+  .print-header{display:none;text-align:center;margin-bottom:10px;}
+  .print-header h2{margin:4px 0;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="print-header">
+    <h2>⚖ Weight Price Calculator</h2>
+    <p id="printKgPrice">1 KG Price: Rs. 0</p>
+  </div>
+
+  <header>
+    <h1>⚖ Weight Price Calculator</h1>
+    <p>Calculate price by weight instantly</p>
+    <div class="status"><span class="dot"></span> Offline Ready</div>
+  </header>
+
+  <div class="card">
+    <h2>💰 Enter 1 KG Price</h2>
+    <div class="input-wrap">
+      <span class="prefix">Rs.</span>
+      <input type="number" id="kgPrice" inputmode="decimal" placeholder="0.00" min="0" step="0.01">
+    </div>
+    <div class="error-msg" id="kgError"></div>
+
+    <div class="quick-buttons">
+      <button type="button" data-val="100">Rs. 100</button>
+      <button type="button" data-val="200">Rs. 200</button>
+      <button type="button" data-val="300">Rs. 300</button>
+      <button type="button" data-val="500">Rs. 500</button>
+      <button type="button" data-val="1000">Rs. 1000</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>✏️ Calculate Custom Weight</h2>
+    <div class="custom-input">
+      <div class="input-wrap">
+        <input type="number" id="customWeight" inputmode="decimal" placeholder="Enter weight in grams" min="0" step="0.01">
+        <span class="prefix" style="margin-left:6px;margin-right:0;">gm</span>
+      </div>
+      <div class="error-msg" id="customError"></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="calcCustomBtn">🧮 Calculate</button>
+      </div>
+    </div>
+    <div class="custom-result">
+      <div class="label">Result</div>
+      <div class="value" id="customResult">— gm = Rs. —</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📊 Weight Price List</h2>
+    <div class="btn-row" style="margin-top:0;margin-bottom:12px;">
+      <button class="btn btn-primary" id="viewListBtn">👁️ View Weight Price List</button>
+    </div>
+    <div class="grid" id="weightGrid" style="display:none;"></div>
+  </div>
+
+  <div class="card">
+    <div class="btn-row">
+      <button class="btn btn-secondary" id="shareBtn">📤 Share Result</button>
+      <button class="btn btn-secondary" id="printBtn">🖨️ Print</button>
+      <button class="btn btn-danger" id="resetBtn">♻️ Reset</button>
+    </div>
+    <div class="storage-row">
+      <span>Last price is saved automatically</span>
+      <button type="button" id="clearStorageBtn">Clear Saved Price</button>
+    </div>
+  </div>
+
+  <footer>100% Offline &middot; No internet required</footer>
+</div>
+
+<div class="toast" id="toast">Copied! ✓</div>
+
+<div class="modal-overlay" id="resetModal">
+  <div class="modal">
+    <p>Are you sure you want to reset the calculator?</p>
+    <div class="modal-btns">
+      <button class="cancel" id="resetCancel">Cancel</button>
+      <button class="confirm" id="resetConfirm">Reset</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var WEIGHTS = [100,150,200,250,300,350,400,450,500,550,600,650,700,750,800,850,900,950,1000];
+  var STORAGE_KEY = "wpc_kg_price";
+
+  var kgPriceInput = document.getElementById("kgPrice");
+  var kgError = document.getElementById("kgError");
+  var weightGrid = document.getElementById("weightGrid");
+  var viewListBtn = document.getElementById("viewListBtn");
+  var customWeightInput = document.getElementById("customWeight");
+  var customError = document.getElementById("customError");
+  var customResult = document.getElementById("customResult");
+  var calcCustomBtn = document.getElementById("calcCustomBtn");
+  var toast = document.getElementById("toast");
+  var printKgPrice = document.getElementById("printKgPrice");
+
+  // ---------- Helpers ----------
+  function formatMoney(num){
+    if(!isFinite(num)) return "0";
+    var rounded = Math.round(num * 100) / 100;
+    if(Math.abs(rounded - Math.round(rounded)) < 0.001){
+      return String(Math.round(rounded));
+    }
+    return rounded.toFixed(2);
+  }
+
+  function showToast(msg){
+    toast.textContent = msg;
+    toast.classList.add("show");
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(function(){
+      toast.classList.remove("show");
+    }, 1600);
+  }
+
+  function copyToClipboard(text){
+    return new Promise(function(resolve){
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(function(){
+          resolve(true);
+        }).catch(function(){
+          resolve(fallbackCopy(text));
+        });
+      } else {
+        resolve(fallbackCopy(text));
+      }
+    });
+  }
+
+  function fallbackCopy(text){
+    try{
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      var ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      return ok;
+    }catch(e){
+      return false;
+    }
+  }
+
+  // ---------- Core calculation ----------
+  function getKgPrice(){
+    var val = parseFloat(kgPriceInput.value);
+    if(isNaN(val) || val <= 0) return 0;
+    return val;
+  }
+
+  function renderGrid(){
+    var kg = getKgPrice();
+    weightGrid.innerHTML = "";
+    WEIGHTS.forEach(function(w){
+      var price = (w / 1000) * kg;
+      var label = w === 1000 ? "1 KG" : w + " gm";
+      var priceText = "Rs. " + formatMoney(price);
+
+      var cardEl = document.createElement("div");
+      cardEl.className = "weight-card";
+
+      var wtEl = document.createElement("div");
+      wtEl.className = "wt";
+      wtEl.textContent = label;
+
+      var priceEl = document.createElement("div");
+      priceEl.className = "price";
+      priceEl.textContent = priceText;
+
+      var copyBtn = document.createElement("button");
+      copyBtn.type = "button";
+      copyBtn.className = "copy-btn";
+      copyBtn.textContent = "Copy";
+      copyBtn.addEventListener("click", function(){
+        var text = label + " = " + priceText;
+        copyToClipboard(text).then(function(ok){
+          if(ok){
+            copyBtn.textContent = "Copied! ✓";
+            copyBtn.classList.add("copied");
+            setTimeout(function(){
+              copyBtn.textContent = "Copy";
+              copyBtn.classList.remove("copied");
+            }, 1200);
+          } else {
+            showToast("Copy failed");
+          }
+        });
+      });
+
+      cardEl.appendChild(wtEl);
+      cardEl.appendChild(priceEl);
+      cardEl.appendChild(copyBtn);
+      weightGrid.appendChild(cardEl);
+    });
+
+    printKgPrice.textContent = "1 KG Price: Rs. " + formatMoney(kg);
+  }
+
+  function validateKgPrice(){
+    var raw = kgPriceInput.value.trim();
+    if(raw === ""){
+      kgError.textContent = "";
+      return true;
+    }
+    var val = parseFloat(raw);
+    if(isNaN(val)){
+      kgError.textContent = "Please enter a valid number.";
+      return false;
+    }
+    if(val <= 0){
+      kgError.textContent = "Price must be greater than 0.";
+      return false;
+    }
+    kgError.textContent = "";
+    return true;
+  }
+
+  function saveKgPrice(){
+    try{
+      var raw = kgPriceInput.value.trim();
+      if(raw !== "" && validateKgPrice()){
+        localStorage.setItem(STORAGE_KEY, raw);
+      }
+    }catch(e){ /* localStorage unavailable, fail silently */ }
+  }
+
+  function loadKgPrice(){
+    try{
+      var saved = localStorage.getItem(STORAGE_KEY);
+      if(saved !== null && saved !== ""){
+        kgPriceInput.value = saved;
+      }
+    }catch(e){ /* ignore */ }
+  }
+
+  function calculateCustom(){
+    var kg = getKgPrice();
+    var raw = customWeightInput.value.trim();
+
+    if(raw === ""){
+      customError.textContent = "";
+      customResult.textContent = "— gm = Rs. —";
+      return;
+    }
+
+    var w = parseFloat(raw);
+    if(isNaN(w)){
+      customError.textContent = "Please enter a valid weight.";
+      customResult.textContent = "— gm = Rs. —";
+      return;
+    }
+    if(w <= 0){
+      customError.textContent = "Weight must be greater than 0.";
+      customResult.textContent = "— gm = Rs. —";
+      return;
+    }
+    if(kg <= 0){
+      customError.textContent = "Enter a valid 1 KG price first.";
+      customResult.textContent = "— gm = Rs. —";
+      return;
+    }
+
+    customError.textContent = "";
+    var price = (w / 1000) * kg;
+    customResult.textContent = formatMoney(w) + " gm = Rs. " + formatMoney(price);
+  }
+
+  // ---------- Event wiring ----------
+  viewListBtn.addEventListener("click", function(){
+    var isHidden = weightGrid.style.display === "none";
+    if(isHidden){
+      renderGrid();
+      weightGrid.style.display = "grid";
+      viewListBtn.textContent = "🙈 Hide Weight Price List";
+    } else {
+      weightGrid.style.display = "none";
+      viewListBtn.textContent = "👁️ View Weight Price List";
+    }
+  });
+
+  kgPriceInput.addEventListener("input", function(){
+    validateKgPrice();
+    renderGrid();
+    calculateCustom();
+    saveKgPrice();
+  });
+
+  document.querySelectorAll(".quick-buttons button").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      kgPriceInput.value = btn.getAttribute("data-val");
+      validateKgPrice();
+      renderGrid();
+      calculateCustom();
+      saveKgPrice();
+    });
+  });
+
+  customWeightInput.addEventListener("input", calculateCustom);
+  calcCustomBtn.addEventListener("click", calculateCustom);
+
+  // Share
+  document.getElementById("shareBtn").addEventListener("click", function(){
+    var kg = getKgPrice();
+    var lines = ["Weight Price Calculator", "1 KG Price: Rs. " + formatMoney(kg), ""];
+    WEIGHTS.forEach(function(w){
+      var price = (w / 1000) * kg;
+      var label = w === 1000 ? "1 KG" : w + " gm";
+      lines.push(label + " = Rs. " + formatMoney(price));
+    });
+    var text = lines.join("\n");
+
+    if(navigator.share){
+      navigator.share({ title: "Weight Price Calculator", text: text }).catch(function(){ /* user cancelled */ });
+    } else {
+      copyToClipboard(text).then(function(ok){
+        showToast(ok ? "Copied! ✓" : "Copy failed");
+      });
+    }
+  });
+
+  // Print
+  document.getElementById("printBtn").addEventListener("click", function(){
+    window.print();
+  });
+
+  // Reset with confirm modal
+  var resetModal = document.getElementById("resetModal");
+  document.getElementById("resetBtn").addEventListener("click", function(){
+    resetModal.classList.add("show");
+  });
+  document.getElementById("resetCancel").addEventListener("click", function(){
+    resetModal.classList.remove("show");
+  });
+  document.getElementById("resetConfirm").addEventListener("click", function(){
+    kgPriceInput.value = "";
+    customWeightInput.value = "";
+    kgError.textContent = "";
+    customError.textContent = "";
+    customResult.textContent = "— gm = Rs. —";
+    try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+    renderGrid();
+    weightGrid.style.display = "none";
+    viewListBtn.textContent = "👁️ View Weight Price List";
+    resetModal.classList.remove("show");
+    showToast("Reset done");
+  });
+  resetModal.addEventListener("click", function(e){
+    if(e.target === resetModal) resetModal.classList.remove("show");
+  });
+
+  // Clear saved price only
+  document.getElementById("clearStorageBtn").addEventListener("click", function(){
+    try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+    showToast("Saved price cleared");
+  });
+
+  // ---------- Init ----------
+  loadKgPrice();
+  renderGrid();
+  calculateCustom();
+})();
+</script>
+</body>
+</html>
